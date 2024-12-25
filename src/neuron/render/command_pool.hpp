@@ -15,11 +15,11 @@ namespace neuron::render {
         CommandPool &operator=(const CommandPool &other)     = delete;
         CommandPool &operator=(CommandPool &&other) noexcept = default;
 
-        inline const vk::raii::CommandPool &get() const { return *m_command_pool; };
+        inline const vk::raii::CommandPool &get() const { return m_command_pool; };
 
-        inline const vk::raii::CommandPool &operator*() const { return *m_command_pool; };
+        inline const vk::raii::CommandPool &operator*() const { return m_command_pool; };
 
-        inline const vk::raii::CommandPool *operator->() const { return m_command_pool.get(); };
+        inline const vk::raii::CommandPool *operator->() const { return &m_command_pool; };
 
         vk::raii::CommandBuffers allocate(std::size_t count, vk::CommandBufferLevel level = vk::CommandBufferLevel::ePrimary) const;
         vk::raii::CommandBuffer  allocate_one(vk::CommandBufferLevel level = vk::CommandBufferLevel::ePrimary) const;
@@ -27,10 +27,10 @@ namespace neuron::render {
         void reset() const;
 
       private:
-        std::shared_ptr<vk::raii::Device>      m_device;
-        uint32_t                               m_queue_family;
-        bool                                   m_individually_resettable;
-        std::unique_ptr<vk::raii::CommandPool> m_command_pool;
+        std::shared_ptr<vk::raii::Device> m_device;
+        uint32_t                          m_queue_family;
+        bool                              m_individually_resettable;
+        vk::raii::CommandPool             m_command_pool = nullptr;
     };
 
 } // namespace neuron::render

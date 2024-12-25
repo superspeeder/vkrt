@@ -128,3 +128,6 @@ fabric.properties
 /shaders/spirvasm/
 
 /build
+
+/vkrt
+/compile_commands.json

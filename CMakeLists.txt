@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.30)
 project(vkrt)
 
 set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 
 include(FetchContent)
 FetchContent_Declare(glm
@@ -50,7 +51,9 @@ add_executable(vkrt src/main.cpp
         src/neuron/render/pipeline_layout.cpp
         src/neuron/render/pipeline_layout.hpp
         src/neuron/render/buffer.cpp
-        src/neuron/render/buffer.hpp)
+        src/neuron/render/buffer.hpp
+        src/neuron/render/descriptor_set_layout.cpp
+        src/neuron/render/descriptor_set_layout.hpp)
 
 target_include_directories(vkrt PRIVATE src/)
 target_link_libraries(vkrt Vulkan::Vulkan glm::glm glfw GPUOpen::VulkanMemoryAllocator spdlog::spdlog)
