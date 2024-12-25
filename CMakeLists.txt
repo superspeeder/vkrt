@@ -44,7 +44,11 @@ add_executable(vkrt src/main.cpp
         src/neuron/render/command_pool.cpp
         src/neuron/render/command_pool.hpp
         src/neuron/render/shader_module.cpp
-        src/neuron/render/shader_module.hpp)
+        src/neuron/render/shader_module.hpp
+        src/neuron/render/graphics_pipeline.cpp
+        src/neuron/render/graphics_pipeline.hpp
+        src/neuron/render/pipeline_layout.cpp
+        src/neuron/render/pipeline_layout.hpp)
 
 target_include_directories(vkrt PRIVATE src/)
 target_link_libraries(vkrt Vulkan::Vulkan glm::glm glfw GPUOpen::VulkanMemoryAllocator spdlog::spdlog)

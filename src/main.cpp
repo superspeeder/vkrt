@@ -1,5 +1,8 @@
+#include "../cmake-build-trace/_deps/spdlog-src/include/spdlog/spdlog.h"
 #include "neuron/engine.hpp"
 #include "neuron/render/command_pool.hpp"
+#include "neuron/render/graphics_pipeline.hpp"
+#include "neuron/render/pipeline_layout.hpp"
 #include "neuron/window.hpp"
 
 
@@ -15,6 +18,37 @@ void run([[maybe_unused]] const std::shared_ptr<neuron::Engine> &engine) {
 
     const auto command_pool   = std::make_unique<neuron::render::CommandPool>(render_context->device(), render_context->queue_family().value(), true);
     const auto command_buffer = command_pool->allocate_one();
+
+    const auto pipeline_layout = std::make_shared<neuron::render::PipelineLayout>(render_context->device(),
+                                                                                  neuron::render::PipelineLayout::Settings{});
+
+    const auto vsh = render_context->load_shader("shaders/bin/vert.glsl.spv");
+    const auto fsh = render_context->load_shader("shaders/bin/frag.glsl.spv");
+
+    const auto graphics_pipeline = std::make_unique<neuron::render::GraphicsPipeline>(
+        render_context->device(),
+        neuron::render::GraphicsPipeline::Settings{
+            .dynamic_states = {vk::DynamicState::eScissor, vk::DynamicState::eViewport},
+            .shaders =
+                {
+                    {.module = vsh, .stage = vk::ShaderStageFlagBits::eVertex},
+                    {.module = fsh, .stage = vk::ShaderStageFlagBits::eFragment},
+                },
+            .color_attachments =
+                {
+                    {true, vk::BlendFactor::eSrcAlpha, vk::BlendFactor::eOneMinusSrcAlpha, vk::BlendOp::eAdd, vk::BlendFactor::eOne,
+                     vk::BlendFactor::eZero, vk::BlendOp::eAdd,
+                     vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB |
+                         vk::ColorComponentFlagBits::eA},
+                },
+            .viewport = render_context->viewport_full(0.0f, 1.0f),
+            .scissor  = render_context->scissor_full(),
+            .layout   = pipeline_layout,
+
+            .rendering_attachment_formats = neuron::render::RenderingAttachmentFormats{.color_attachments =
+                                                                                           {render_context->surface_configuration()->image_format}},
+        });
+
 
     while (!window->should_close()) {
         neuron::Window::poll();
@@ -49,6 +83,10 @@ void run([[maybe_unused]] const std::shared_ptr<neuron::Engine> &engine) {
 
                 command_buffer.beginRendering(
                     vk::RenderingInfo({}, vk::Rect2D({0, 0}, render_context->surface_configuration()->image_extent), 1, 0, attachment));
+                command_buffer.bindPipeline(vk::PipelineBindPoint::eGraphics, **graphics_pipeline);
+                command_buffer.setViewport(0, render_context->viewport_full(0.0, 1.0));
+                command_buffer.setScissor(0, render_context->scissor_full());
+                command_buffer.draw(3, 1, 0, 0);
                 command_buffer.endRendering();
             }
 
@@ -84,10 +122,21 @@ void run([[maybe_unused]] const std::shared_ptr<neuron::Engine> &engine) {
             render_context->end_frame(std::move(frame_info));
         }
     }
+
+    render_context->device()->waitIdle();
 }
 
 int main() {
-    const auto engine = std::make_shared<neuron::Engine>();
-    run(engine);
+    try {
+        const auto engine = std::make_shared<neuron::Engine>();
+        run(engine);
+    } catch (std::exception& e) {
+        spdlog::critical("{}", e.what());
+        spdlog::shutdown();
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max());
+        std::string c;
+        std::cin >> c;
+        return 1;
+    }
     return 0;
 }

@@ -252,4 +252,22 @@ namespace neuron::render {
             setup_swapchain();
         }
     }
+
+    vk::Viewport RenderContext::viewport_full(float min_depth, float max_depth) const {
+        return {
+            0.0f,
+            0.0f,
+            static_cast<float>(m_surface_configuration->image_extent.width),
+            static_cast<float>(m_surface_configuration->image_extent.height),
+            min_depth,
+            max_depth,
+        };
+    }
+
+    vk::Rect2D RenderContext::scissor_full() const {
+        return {
+            {0, 0},
+            m_surface_configuration->image_extent,
+        };
+    }
 } // namespace neuron::render

@@ -1,4 +1,7 @@
 #pragma once
+#include "shader_module.hpp"
+
+
 #include <memory>
 
 #include <vulkan/vulkan.hpp>
@@ -76,6 +79,10 @@ namespace neuron::render {
         FrameInfo begin_frame();
         void      end_frame(FrameInfo frame_info);
 
+        inline std::shared_ptr<ShaderModule> load_shader(const std::filesystem::path &file_path) const { return ShaderModule::load(m_device, file_path); }
+
+        [[nodiscard]] vk::Viewport viewport_full(float min_depth, float max_depth) const;
+        [[nodiscard]] vk::Rect2D scissor_full() const;
 
       private:
         vk::raii::Context                         m_raii_context;
