@@ -48,11 +48,13 @@ add_executable(vkrt src/main.cpp
         src/neuron/render/graphics_pipeline.cpp
         src/neuron/render/graphics_pipeline.hpp
         src/neuron/render/pipeline_layout.cpp
-        src/neuron/render/pipeline_layout.hpp)
+        src/neuron/render/pipeline_layout.hpp
+        src/neuron/render/buffer.cpp
+        src/neuron/render/buffer.hpp)
 
 target_include_directories(vkrt PRIVATE src/)
 target_link_libraries(vkrt Vulkan::Vulkan glm::glm glfw GPUOpen::VulkanMemoryAllocator spdlog::spdlog)
-target_compile_definitions(vkrt PRIVATE -DGLM_ENABLE_EXPERIMENTAL)
+target_compile_definitions(vkrt PRIVATE -DGLM_ENABLE_EXPERIMENTAL VULKAN_HPP_DISPATCH_LOADER_DYNAMIC=1)
 
 if (NEURON_ENABLE_TRACE)
     target_compile_definitions(vkrt PRIVATE -DNEURON_ENABLE_TRACE)

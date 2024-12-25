@@ -1,11 +1,12 @@
 #pragma once
 #include "shader_module.hpp"
 
-
 #include <memory>
 
 #include <vulkan/vulkan.hpp>
 #include <vulkan/vulkan_raii.hpp>
+
+#include <vk_mem_alloc.h>
 
 namespace neuron {
     class Window;
@@ -27,7 +28,7 @@ namespace neuron::render {
         SurfaceConfiguration &operator=(SurfaceConfiguration &&other) noexcept = default;
 
         SurfaceConfiguration()
-            : image_format(vk::Format::eUndefined), image_color_space(static_cast<vk::ColorSpaceKHR>(VK_COLOR_SPACE_MAX_ENUM_KHR + 1)),
+            : image_format(vk::Format::eUndefined), image_color_space(static_cast<vk::ColorSpaceKHR>(VK_COLOR_SPACE_MAX_ENUM_KHR)),
               present_mode(vk::PresentModeKHR::eFifo) {};
     };
 
@@ -79,10 +80,14 @@ namespace neuron::render {
         FrameInfo begin_frame();
         void      end_frame(FrameInfo frame_info);
 
-        inline std::shared_ptr<ShaderModule> load_shader(const std::filesystem::path &file_path) const { return ShaderModule::load(m_device, file_path); }
+        [[nodiscard]] inline std::shared_ptr<ShaderModule> load_shader(const std::filesystem::path &file_path) const {
+            return ShaderModule::load(m_device, file_path);
+        }
 
         [[nodiscard]] vk::Viewport viewport_full(float min_depth, float max_depth) const;
-        [[nodiscard]] vk::Rect2D scissor_full() const;
+        [[nodiscard]] vk::Rect2D   scissor_full() const;
+
+        [[nodiscard]] VmaAllocator allocator() const { return m_allocator; }
 
       private:
         vk::raii::Context                         m_raii_context;
@@ -100,6 +105,8 @@ namespace neuron::render {
 
         std::optional<SurfaceConfiguration> m_surface_configuration;
         const std::shared_ptr<Window>      &m_window;
+
+        VmaAllocator m_allocator;
 
         void setup_swapchain();
     };

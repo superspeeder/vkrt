@@ -23,8 +23,8 @@ namespace neuron::render {
     class GraphicsPipeline final {
       public:
         struct Settings {
-            std::vector<vk::VertexInputAttributeDescription>   vertex_attributes;
             std::vector<vk::VertexInputBindingDescription>     vertex_bindings;
+            std::vector<vk::VertexInputAttributeDescription>   vertex_attributes;
             std::vector<vk::DynamicState>                      dynamic_states;
             std::vector<ShaderStage>                           shaders;
             std::vector<vk::PipelineColorBlendAttachmentState> color_attachments;

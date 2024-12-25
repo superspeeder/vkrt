@@ -3,6 +3,8 @@
 #include <vulkan/vulkan.hpp>
 #include <vulkan/vulkan_raii.hpp>
 
+#include <atomic>
+
 #define GLFW_INCLUDE_NONE
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
@@ -18,24 +20,24 @@ namespace neuron {
             std::string  title = "Window";
         };
 
-        explicit Window(const Attributes &attributes = {});
+        explicit Window(const Attributes &attributes);
         ~Window();
 
-        Window(const Window &) = delete;
+        Window(const Window &)            = delete;
         Window &operator=(const Window &) = delete;
 
-        Window(Window &&) = default;
+        Window(Window &&)            = default;
         Window &operator=(Window &&) = default;
 
 
-        std::unique_ptr<vk::raii::SurfaceKHR> create_surface(const std::shared_ptr<vk::raii::Instance> &instance) const;
+        [[nodiscard]] std::unique_ptr<vk::raii::SurfaceKHR> create_surface(const std::shared_ptr<vk::raii::Instance> &instance) const;
 
-        vk::Extent2D size() const;
-        bool         should_close() const;
-        void         close() const;
+        [[nodiscard]] vk::Extent2D size() const;
+        [[nodiscard]] bool         should_close() const;
+        void                       close() const;
 
         static double time();
-        static void poll();
+        static void   poll();
 
       private:
         GLFWwindow *m_window;

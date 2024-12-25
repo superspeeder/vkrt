@@ -1,5 +1,7 @@
-#include "../cmake-build-trace/_deps/spdlog-src/include/spdlog/spdlog.h"
+#include <spdlog/spdlog.h>
+
 #include "neuron/engine.hpp"
+#include "neuron/render/buffer.hpp"
 #include "neuron/render/command_pool.hpp"
 #include "neuron/render/graphics_pipeline.hpp"
 #include "neuron/render/pipeline_layout.hpp"
@@ -25,10 +27,20 @@ void run([[maybe_unused]] const std::shared_ptr<neuron::Engine> &engine) {
     const auto vsh = render_context->load_shader("shaders/bin/vert.glsl.spv");
     const auto fsh = render_context->load_shader("shaders/bin/frag.glsl.spv");
 
+    std::vector<glm::vec2> vertices = {
+        {0.0f, -0.75f},
+        {0.75f, 0.75f},
+        {-0.75f, 0.75f},
+    };
+
+    const auto buffer = neuron::render::Buffer::create(render_context->device(), render_context->allocator(), vertices, vk::BufferUsageFlagBits::eVertexBuffer, true);
+
     const auto graphics_pipeline = std::make_unique<neuron::render::GraphicsPipeline>(
         render_context->device(),
         neuron::render::GraphicsPipeline::Settings{
-            .dynamic_states = {vk::DynamicState::eScissor, vk::DynamicState::eViewport},
+            .vertex_bindings   = {vk::VertexInputBindingDescription(0, sizeof(glm::vec2))},
+            .vertex_attributes = {vk::VertexInputAttributeDescription(0, 0, vk::Format::eR32G32Sfloat)},
+            .dynamic_states    = {vk::DynamicState::eScissor, vk::DynamicState::eViewport},
             .shaders =
                 {
                     {.module = vsh, .stage = vk::ShaderStageFlagBits::eVertex},
@@ -85,6 +97,8 @@ void run([[maybe_unused]] const std::shared_ptr<neuron::Engine> &engine) {
                     vk::RenderingInfo({}, vk::Rect2D({0, 0}, render_context->surface_configuration()->image_extent), 1, 0, attachment));
                 command_buffer.bindPipeline(vk::PipelineBindPoint::eGraphics, **graphics_pipeline);
                 command_buffer.setViewport(0, render_context->viewport_full(0.0, 1.0));
+                command_buffer.bindVertexBuffers(0, ***buffer, {0});
+
                 command_buffer.setScissor(0, render_context->scissor_full());
                 command_buffer.draw(3, 1, 0, 0);
                 command_buffer.endRendering();
@@ -130,12 +144,9 @@ int main() {
     try {
         const auto engine = std::make_shared<neuron::Engine>();
         run(engine);
-    } catch (std::exception& e) {
+    } catch (std::exception &e) {
         spdlog::critical("{}", e.what());
         spdlog::shutdown();
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max());
-        std::string c;
-        std::cin >> c;
         return 1;
     }
     return 0;

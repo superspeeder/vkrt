@@ -1,3 +1,5 @@
+#define VMA_IMPLEMENTATION
+
 #include "render_context.hpp"
 
 #include "neuron/logutil.hpp"
@@ -5,12 +7,14 @@
 
 #include <spdlog/spdlog.h>
 
+VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE;
+
 namespace neuron::render {
     struct Features {
         vk::StructureChain<vk::PhysicalDeviceFeatures2, vk::PhysicalDeviceVulkan11Features, vk::PhysicalDeviceVulkan12Features,
                            vk::PhysicalDeviceVulkan13Features, vk::PhysicalDeviceAccelerationStructureFeaturesKHR,
                            vk::PhysicalDeviceRayQueryFeaturesKHR, vk::PhysicalDeviceRayTracingMaintenance1FeaturesKHR,
-                           vk::PhysicalDeviceRayTracingPipelineFeaturesKHR, vk::PhysicalDeviceRayTracingPositionFetchFeaturesKHR,
+                           vk::PhysicalDeviceRayTracingPipelineFeaturesKHR, 
                            vk::PhysicalDeviceShaderClockFeaturesKHR>
             f;
     };
@@ -70,15 +74,12 @@ namespace neuron::render {
             f.rayTracingMaintenance1               = true;
             f.rayTracingPipelineTraceRaysIndirect2 = true;
         }
-        {
-            auto &f                   = features.get<vk::PhysicalDeviceRayTracingPositionFetchFeaturesKHR>();
-            f.rayTracingPositionFetch = true;
-        }
         return {features};
     }
 
     RenderContext::RenderContext(const std::shared_ptr<Window> &window) : m_window(window) {
         NEURON_TRACE_TOOL();
+        VULKAN_HPP_DEFAULT_DISPATCHER.init();
 
         uint32_t   instext_count;
         const auto required_instance_extensions = glfwGetRequiredInstanceExtensions(&instext_count);
@@ -87,6 +88,8 @@ namespace neuron::render {
 
         m_instance = std::make_shared<vk::raii::Instance>(raii(),
                                                           vk::InstanceCreateInfo({}, &app_info, 0, {}, instext_count, required_instance_extensions));
+
+        VULKAN_HPP_DEFAULT_DISPATCHER.init(**m_instance);
 
         auto physical_devices = m_instance->enumeratePhysicalDevices();
         m_physical_device     = std::make_shared<vk::raii::PhysicalDevice>(physical_devices[0]);
@@ -120,11 +123,12 @@ namespace neuron::render {
             VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME,
             VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME,
             VK_KHR_RAY_TRACING_MAINTENANCE_1_EXTENSION_NAME,
-            VK_KHR_RAY_TRACING_POSITION_FETCH_EXTENSION_NAME,
         };
 
         m_device = std::make_shared<vk::raii::Device>(
             *m_physical_device, vk::DeviceCreateInfo({}, queue_create_info, {}, extensions, nullptr, &features.get<vk::PhysicalDeviceFeatures2>()));
+
+        VULKAN_HPP_DEFAULT_DISPATCHER.init(**m_device);
 
         m_queue = std::make_shared<vk::raii::Queue>(m_device->getQueue(m_queue_family.value(), 0));
 
@@ -134,10 +138,24 @@ namespace neuron::render {
         m_render_finished_semaphore = std::make_unique<vk::raii::Semaphore>(*m_device, vk::SemaphoreCreateInfo(vk::SemaphoreCreateFlags()));
 
         setup_swapchain();
+
+        {
+            VmaAllocatorCreateInfo aci{};
+            aci.instance = **m_instance;
+            aci.physicalDevice = **m_physical_device;
+            aci.device = **m_device;
+            aci.vulkanApiVersion = vk::ApiVersion13;
+            if (vmaCreateAllocator(&aci, &m_allocator) != VK_SUCCESS) {
+                throw std::runtime_error("Failed to create vma allocator");
+            }
+        }
     }
 
     RenderContext::~RenderContext() {
         NEURON_TRACE_TOOL();
+
+        vmaDestroyAllocator(m_allocator);
+        m_allocator = nullptr;
     }
 
     void RenderContext::setup_swapchain() {
