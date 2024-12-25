@@ -10,6 +10,12 @@
 
 #include <iostream>
 
+struct PushConstants {
+    glm::vec2 position;
+    glm::vec2 scale;
+    glm::vec4 color;
+};
+
 void run([[maybe_unused]] const std::shared_ptr<neuron::Engine> &engine) {
     const auto window = std::make_shared<neuron::Window>(neuron::Window::Attributes{
         .size  = {800, 600},
@@ -21,19 +27,23 @@ void run([[maybe_unused]] const std::shared_ptr<neuron::Engine> &engine) {
     const auto command_pool   = std::make_unique<neuron::render::CommandPool>(render_context->device(), render_context->queue_family().value(), true);
     const auto command_buffer = command_pool->allocate_one();
 
-    const auto pipeline_layout = std::make_shared<neuron::render::PipelineLayout>(render_context->device(),
-                                                                                  neuron::render::PipelineLayout::Settings{});
+    const auto pipeline_layout = std::make_shared<neuron::render::PipelineLayout>(
+        render_context->device(),
+        neuron::render::PipelineLayout::Settings{
+            .push_constant_ranges = {
+                vk::PushConstantRange(vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment, 0, sizeof(PushConstants))}});
 
     const auto vsh = render_context->load_shader("shaders/bin/vert.glsl.spv");
     const auto fsh = render_context->load_shader("shaders/bin/frag.glsl.spv");
 
     std::vector<glm::vec2> vertices = {
-        {0.0f, -0.75f},
-        {0.75f, 0.75f},
-        {-0.75f, 0.75f},
+        {0.0f, -0.5f},
+        {0.5f, 0.5f},
+        {-0.5f, 0.5f},
     };
 
-    const auto buffer = neuron::render::Buffer::create(render_context->device(), render_context->allocator(), vertices, vk::BufferUsageFlagBits::eVertexBuffer, true);
+    const auto buffer = neuron::render::Buffer::create(
+        render_context->device(), render_context->allocator(), vertices, vk::BufferUsageFlagBits::eVertexBuffer, true);
 
     const auto graphics_pipeline = std::make_unique<neuron::render::GraphicsPipeline>(
         render_context->device(),
@@ -84,7 +94,7 @@ void run([[maybe_unused]] const std::shared_ptr<neuron::Engine> &engine) {
             }
 
             {
-                vk::ClearColorValue clear_color{1.0f, 0.0f, 1.0f, 1.0f};
+                vk::ClearColorValue clear_color{0.0f, 0.0f, 0.0f, 1.0f};
 
                 vk::RenderingAttachmentInfo attachment{
                     frame_info.image_view,          vk::ImageLayout::eColorAttachmentOptimal,
@@ -97,10 +107,32 @@ void run([[maybe_unused]] const std::shared_ptr<neuron::Engine> &engine) {
                     vk::RenderingInfo({}, vk::Rect2D({0, 0}, render_context->surface_configuration()->image_extent), 1, 0, attachment));
                 command_buffer.bindPipeline(vk::PipelineBindPoint::eGraphics, **graphics_pipeline);
                 command_buffer.setViewport(0, render_context->viewport_full(0.0, 1.0));
+                command_buffer.setScissor(0, render_context->scissor_full());
                 command_buffer.bindVertexBuffers(0, ***buffer, {0});
 
-                command_buffer.setScissor(0, render_context->scissor_full());
+                PushConstants push_constant{
+                    .position = {0.0, 0.0},
+                    .scale = {2.0, 2.0},
+                    .color = {1.0, 0.0, 0.0, 1.0}
+                };
+
+                command_buffer.pushConstants<PushConstants>(***pipeline_layout, vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment, 0, push_constant);
                 command_buffer.draw(3, 1, 0, 0);
+
+                push_constant.position = {-0.5, 0.5};
+                push_constant.scale = {-0.75, -0.75};
+                push_constant.color = {0.0, 1.0, 0.0, 1.0};
+
+                command_buffer.pushConstants<PushConstants>(***pipeline_layout, vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment, 0, push_constant);
+                command_buffer.draw(3, 1, 0, 0);
+
+                push_constant.position = {0.5, -0.5};
+                push_constant.scale = {0.75, 0.75};
+                push_constant.color = {0.0, 0.0, 1.0, 1.0};
+
+                command_buffer.pushConstants<PushConstants>(***pipeline_layout, vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment, 0, push_constant);
+                command_buffer.draw(3, 1, 0, 0);
+
                 command_buffer.endRendering();
             }
 

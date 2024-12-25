@@ -126,3 +126,5 @@ fabric.properties
 
 /shaders/bin/
 /shaders/spirvasm/
+
+/build

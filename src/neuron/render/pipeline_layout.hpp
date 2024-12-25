@@ -6,10 +6,10 @@ namespace neuron::render {
     class PipelineLayout final {
       public:
         struct Settings {
-
+            std::vector<vk::PushConstantRange> push_constant_ranges;
         };
 
-        PipelineLayout(const std::shared_ptr<vk::raii::Device>& device, const Settings &settings);
+        PipelineLayout(const std::shared_ptr<vk::raii::Device> &device, const Settings &settings);
         ~PipelineLayout() = default;
 
         inline const vk::raii::PipelineLayout &get() const noexcept { return m_pipeline_layout; }
@@ -20,7 +20,7 @@ namespace neuron::render {
 
       private:
         std::shared_ptr<vk::raii::Device> m_device;
-        vk::raii::PipelineLayout m_pipeline_layout = nullptr;
+        vk::raii::PipelineLayout          m_pipeline_layout = nullptr;
     };
 
 } // namespace neuron::render
