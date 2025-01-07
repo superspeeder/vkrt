@@ -29,21 +29,28 @@ namespace neuron::render {
             return std::make_shared<Buffer>(device, allocator, data.data(), N * sizeof(T), usage, host_mappable);
         }
 
-        inline const vk::raii::Buffer& get() const { return m_buffer; };
-        inline const vk::raii::Buffer& operator*() const { return m_buffer; };
-        inline const vk::raii::Buffer* operator->() const { return &m_buffer; };
+        template <typename T>
+        static std::shared_ptr<Buffer> create_obj(const std::shared_ptr<vk::raii::Device> &device, VmaAllocator allocator, const T &data,
+                                                  vk::BufferUsageFlags usage, bool host_mappable = true) {
+            return std::make_shared<Buffer>(device, allocator, &data, sizeof(T), usage, host_mappable);
+        }
+
+        inline const vk::raii::Buffer &get() const { return m_buffer; };
+
+        inline const vk::raii::Buffer &operator*() const { return m_buffer; };
+
+        inline const vk::raii::Buffer *operator->() const { return &m_buffer; };
 
         inline vk::DeviceSize size() const noexcept { return m_size; }
 
       private:
         std::shared_ptr<vk::raii::Device> m_device;
-        VmaAllocator m_allocator;
+        VmaAllocator                      m_allocator;
 
         vk::raii::Buffer  m_buffer = nullptr;
         VmaAllocation     m_allocation;
         VmaAllocationInfo m_allocation_info;
 
         vk::DeviceSize m_size;
-
     };
 } // namespace neuron::render

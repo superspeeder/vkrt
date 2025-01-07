@@ -2,11 +2,13 @@
 #include <vulkan/vulkan_raii.hpp>
 
 namespace neuron::render {
+    class DescriptorSetLayout;
 
     class PipelineLayout final {
       public:
         struct Settings {
             std::vector<vk::PushConstantRange> push_constant_ranges;
+            std::vector<std::shared_ptr<DescriptorSetLayout>> descriptor_set_layouts;
         };
 
         PipelineLayout(const std::shared_ptr<vk::raii::Device> &device, const Settings &settings);

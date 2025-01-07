@@ -53,7 +53,9 @@ add_executable(vkrt src/main.cpp
         src/neuron/render/buffer.cpp
         src/neuron/render/buffer.hpp
         src/neuron/render/descriptor_set_layout.cpp
-        src/neuron/render/descriptor_set_layout.hpp)
+        src/neuron/render/descriptor_set_layout.hpp
+        src/neuron/render/descriptor_set.cpp
+        src/neuron/render/descriptor_set.hpp)
 
 target_include_directories(vkrt PRIVATE src/)
 target_link_libraries(vkrt Vulkan::Vulkan glm::glm glfw GPUOpen::VulkanMemoryAllocator spdlog::spdlog)
