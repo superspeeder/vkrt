@@ -2,6 +2,8 @@
 
 #include <vulkan/vulkan_raii.hpp>
 
+#include "neuron/render/pipeline_layout.hpp"
+
 namespace neuron::render {
     struct ImageLayoutState {
         vk::ImageLayout         layout;
@@ -49,5 +51,25 @@ namespace neuron::render {
 
       private:
         const vk::raii::CommandBuffer &m_command_buffer;
+    };
+
+    class DynamicRenderingContext {
+    public:
+        DynamicRenderingContext(const CommandRecorder& recorder, const vk::RenderingInfo &rendering_info) : m_recorder(recorder) {
+            m_recorder->beginRendering(rendering_info);
+        };
+
+        ~DynamicRenderingContext() {
+            m_recorder->endRendering();
+        };
+
+        template<typename T>
+        void push_constants(const std::shared_ptr<PipelineLayout> &pipeline_layout, vk::ShaderStageFlags stages, const T& data, std::ptrdiff_t offset = 0) const {
+            m_recorder->pushConstants<T>(***pipeline_layout, stages, static_cast<uint32_t>(offset), value)
+        };
+
+    private:
+
+        const CommandRecorder& m_recorder;
     };
 } // namespace neuron::render
