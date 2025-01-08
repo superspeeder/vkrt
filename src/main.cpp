@@ -6,6 +6,7 @@
 #include "neuron/render/descriptor_set.hpp"
 #include "neuron/render/descriptor_set_layout.hpp"
 #include "neuron/render/graphics_pipeline.hpp"
+#include "neuron/render/helpers.hpp"
 #include "neuron/render/pipeline_layout.hpp"
 #include "neuron/window.hpp"
 
@@ -115,83 +116,66 @@ void run([[maybe_unused]] const std::shared_ptr<neuron::Engine> &engine) {
         {
             auto frame_info = render_context->begin_frame();
 
-            command_buffer.reset();
-            command_buffer.begin(vk::CommandBufferBeginInfo(vk::CommandBufferUsageFlagBits::eOneTimeSubmit));
             {
-                vk::ImageMemoryBarrier2 l1{};
-                l1.image            = frame_info.image;
-                l1.subresourceRange = vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1);
-                l1.oldLayout        = vk::ImageLayout::eUndefined;
-                l1.newLayout        = vk::ImageLayout::eColorAttachmentOptimal;
-                l1.srcAccessMask    = vk::AccessFlagBits2::eNone;
-                l1.dstAccessMask    = vk::AccessFlagBits2::eColorAttachmentWrite;
-                l1.srcStageMask     = vk::PipelineStageFlagBits2::eTopOfPipe;
-                l1.dstStageMask     = vk::PipelineStageFlagBits2::eColorAttachmentOutput;
-                command_buffer.pipelineBarrier2(vk::DependencyInfo({}, {}, {}, l1));
+                auto recorder = neuron::render::CommandRecorder::one_time_submit(command_buffer);
+                recorder.image_transition(frame_info.image,
+                                          {vk::ImageLayout::eUndefined, vk::AccessFlagBits2::eNone, vk::PipelineStageFlagBits2::eTopOfPipe},
+                                          {vk::ImageLayout::eColorAttachmentOptimal, vk::AccessFlagBits2::eColorAttachmentWrite,
+                                           vk::PipelineStageFlagBits2::eColorAttachmentOutput});
+
+                {
+                    vk::ClearColorValue clear_color{0.0f, 0.0f, 0.0f, 1.0f};
+
+                    vk::RenderingAttachmentInfo attachment{
+                        frame_info.image_view,          vk::ImageLayout::eColorAttachmentOptimal,
+                        vk::ResolveModeFlagBits::eNone, {},
+                        vk::ImageLayout::eUndefined,    vk::AttachmentLoadOp::eClear,
+                        vk::AttachmentStoreOp::eStore,  clear_color,
+                    };
+
+                    recorder->beginRendering(
+                        vk::RenderingInfo({}, vk::Rect2D({0, 0}, render_context->surface_configuration()->image_extent), 1, 0, attachment));
+
+                    recorder->bindPipeline(vk::PipelineBindPoint::eGraphics, **graphics_pipeline);
+                    recorder->setViewport(0, render_context->viewport_full(0.0, 1.0));
+                    recorder->setScissor(0, render_context->scissor_full());
+                    recorder->setPrimitiveTopology(vk::PrimitiveTopology::eTriangleStrip);
+
+                    recorder->bindVertexBuffers(0, ***buffer, {0});
+                    recorder->bindDescriptorSets(vk::PipelineBindPoint::eGraphics, ***pipeline_layout, 0, *descriptor_sets[0], {});
+
+
+                    PushConstants push_constant{.position = {0.0, 0.0}, .scale = {1.8, 1.8}, .color = {1.0, 0.0, 0.0, 1.0}};
+
+                    recorder->pushConstants<PushConstants>(***pipeline_layout, vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment,
+                                                           0, push_constant);
+                    recorder->draw(4, 1, 0, 0);
+
+                    push_constant.position = {-0.5, 0.5};
+                    push_constant.scale    = {-0.75, -0.75};
+                    push_constant.color    = {0.0, 1.0, 0.0, 1.0};
+
+                    recorder->pushConstants<PushConstants>(***pipeline_layout, vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment,
+                                                           0, push_constant);
+                    recorder->draw(4, 1, 0, 0);
+
+                    push_constant.position = {0.5, -0.5};
+                    push_constant.scale    = {0.75, 0.75};
+                    push_constant.color    = {0.0, 0.0, 1.0, 1.0};
+
+                    recorder->pushConstants<PushConstants>(***pipeline_layout, vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment,
+                                                           0, push_constant);
+
+                    recorder->draw(4, 1, 0, 0);
+
+                    recorder->endRendering();
+                }
+
+                recorder.image_transition(frame_info.image,
+                                          {vk::ImageLayout::eColorAttachmentOptimal, vk::AccessFlagBits2::eColorAttachmentWrite,
+                                           vk::PipelineStageFlagBits2::eColorAttachmentOutput},
+                                          {vk::ImageLayout::ePresentSrcKHR, vk::AccessFlagBits2::eNone, vk::PipelineStageFlagBits2::eBottomOfPipe});
             }
-
-            {
-                vk::ClearColorValue clear_color{0.0f, 0.0f, 0.0f, 1.0f};
-
-                vk::RenderingAttachmentInfo attachment{
-                    frame_info.image_view,          vk::ImageLayout::eColorAttachmentOptimal,
-                    vk::ResolveModeFlagBits::eNone, {},
-                    vk::ImageLayout::eUndefined,    vk::AttachmentLoadOp::eClear,
-                    vk::AttachmentStoreOp::eStore,  clear_color,
-                };
-
-                command_buffer.beginRendering(
-                    vk::RenderingInfo({}, vk::Rect2D({0, 0}, render_context->surface_configuration()->image_extent), 1, 0, attachment));
-
-                command_buffer.bindPipeline(vk::PipelineBindPoint::eGraphics, **graphics_pipeline);
-                command_buffer.setViewport(0, render_context->viewport_full(0.0, 1.0));
-                command_buffer.setScissor(0, render_context->scissor_full());
-                command_buffer.setPrimitiveTopology(vk::PrimitiveTopology::eTriangleStrip);
-
-                command_buffer.bindVertexBuffers(0, ***buffer, {0});
-                command_buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, ***pipeline_layout, 0, *descriptor_sets[0], {});
-
-
-                PushConstants push_constant{.position = {0.0, 0.0}, .scale = {1.8, 1.8}, .color = {1.0, 0.0, 0.0, 1.0}};
-
-                command_buffer.pushConstants<PushConstants>(***pipeline_layout, vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment,
-                                                            0, push_constant);
-                command_buffer.draw(4, 1, 0, 0);
-
-                push_constant.position = {-0.5, 0.5};
-                push_constant.scale    = {-0.75, -0.75};
-                push_constant.color    = {0.0, 1.0, 0.0, 1.0};
-
-                command_buffer.pushConstants<PushConstants>(***pipeline_layout, vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment,
-                                                            0, push_constant);
-                command_buffer.draw(4, 1, 0, 0);
-
-                push_constant.position = {0.5, -0.5};
-                push_constant.scale    = {0.75, 0.75};
-                push_constant.color    = {0.0, 0.0, 1.0, 1.0};
-
-                command_buffer.pushConstants<PushConstants>(***pipeline_layout, vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment,
-                                                            0, push_constant);
-
-                command_buffer.draw(4, 1, 0, 0);
-
-                command_buffer.endRendering();
-            }
-
-
-            {
-                vk::ImageMemoryBarrier2 l2{};
-                l2.image            = frame_info.image;
-                l2.subresourceRange = vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1);
-                l2.oldLayout        = vk::ImageLayout::eColorAttachmentOptimal;
-                l2.newLayout        = vk::ImageLayout::ePresentSrcKHR;
-                l2.srcAccessMask    = vk::AccessFlagBits2::eColorAttachmentWrite;
-                l2.dstAccessMask    = vk::AccessFlagBits2::eNone;
-                l2.srcStageMask     = vk::PipelineStageFlagBits2::eColorAttachmentOutput;
-                l2.dstStageMask     = vk::PipelineStageFlagBits2::eBottomOfPipe;
-                command_buffer.pipelineBarrier2(vk::DependencyInfo({}, {}, {}, l2));
-            }
-            command_buffer.end();
 
             {
                 vk::CommandBufferSubmitInfo cbi{command_buffer};
