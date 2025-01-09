@@ -1,0 +1,44 @@
+<RenderPass kind="dynamic">
+    <Resources>
+        <Pipeline type="graphics" ref="pipelines#primary" external/>
+        <DescriptorSet type="uniform-buffer" ref="descriptor-sets#camera" external/>
+    </Resources>
+
+    <Pre>
+        <LayoutTransition>
+            <Image from="render-target"/>
+            <SubresourceRange preset="standard-color-1-1"/>
+            <Initial layout="undefined" access="none" stage="top-of-pipe"/>
+            <New layout="color-attachment-optimal" access="color-write" stage="color-attachment-output"/>
+        </LayoutTransition>
+    </Pre>
+
+    <RenderingInfo>
+        <ClearColor color="0xff33ff"/>
+        <StoreLoadOps store="store" load="clear"/>
+    </RenderingInfo>
+
+    <DrawCalls>
+        <BindPipeline resource="pipeline#primary"/>
+        <BindDescriptor bind_point="graphics" resource="descriptor-sets#camera"/>
+        
+        <SetDynamicState>
+            <Viewport automatic/>
+            <Scissor automatic/>
+            <PrimitiveTopology topology="triangle-fan"/>
+        </SetDynamicState>
+
+
+        <BindVertexBuffer />
+
+    </DrawCalls>
+
+    <Post>
+        <LayoutTransition>
+            <Image from="render-target"/>
+            <SubresourceRange preset="standard-color-1-1"/>
+            <Initial layout="color-attachment-optimal" access="color-write" stage="color-attachment-output"/>
+            <New layout="present-source" access="none" stage="bottom-of-pipe"/>
+        </LayoutTransition>
+    </Post>
+</RenderPass>
