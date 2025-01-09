@@ -1,0 +1,19 @@
+descriptor_set_layouts:
+  - example_dsl
+
+push_constant_ranges:
+  - range:
+      stages:
+        - vertex
+        - fragment
+      offset: 0
+      layout:
+        - entry:
+            type: vec2
+            key: position
+        - entry:
+            type: vec2
+            key: scale
+        - entry:
+            type: vec4
+            key: color

@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DescriptorSetLayout>
+    <Binding index="0" type="uniform-buffer" count="1" stages="vertex,fragment"/>
+</DescriptorSetLayout>

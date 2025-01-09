@@ -1,0 +1,76 @@
+{
+  "asset-type": "pipeline",
+  "type": "graphics",
+  "pipeline_layout": "example_pipeline_layout",
+  "vertex_layout": {
+    "bindings": [
+      {
+        "binding": {
+          "index": 0,
+          "size": "packed",
+          "attributes": [
+            {
+              "attribute": {
+                "location": 0,
+                "type": "float-vec2"
+              }
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "dynamic_states": [
+    "scissor",
+    "viewport",
+    "primitive-topology"
+  ],
+  "shaders": [
+    {
+      "shader": {
+        "stage": "vertex",
+        "code_type": "SPIR-V",
+        "code": "shaders/bin/vert.glsl.spv"
+      }
+    },
+    {
+      "shader": {
+        "stage": "fragment",
+        "code_type": "SPIR-V",
+        "code": "shaders/bin/frag.glsl.spv"
+      }
+    }
+  ],
+  "blend_attachments": [
+    {
+      "color_attachment": {
+        "enable_blend": true,
+        "write_mask": "rgba",
+        "color_function": {
+          "src_factor": "src-alpha",
+          "dst_factor": "one-minus-src-alpha",
+          "operator": "add"
+        },
+        "alpha_function": {
+          "src_factor": "one",
+          "dst_factor": "zero",
+          "operator": "add"
+        }
+      }
+    }
+  ],
+  "cull_mode": "none",
+  "viewports": {
+    "dynamic_fixed_count": 1
+  },
+  "scissors": {
+    "dynamic_fixed_count": 1
+  },
+  "rendering_attachments": [
+    {
+      "color_attachment": {
+        "format": "@swapchain-surface-format"
+      }
+    }
+  ]
+}

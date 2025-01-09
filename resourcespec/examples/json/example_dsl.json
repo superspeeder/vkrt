@@ -1,0 +1,13 @@
+{
+  "asset-type": "descriptor-set-layout",
+  "bindings": [
+    {
+      "index": 0,
+      "descriptor-type": "uniform-buffer",
+      "stages": [
+        "vertex",
+        "fragment"
+      ]
+    }
+  ]
+}

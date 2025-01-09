@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://neuron.superspeeder.dev/schema/asset.schema.json",
+  "title": "Asset Definition",
+  "description": "Generic schema for assets",
+  "type": "object",
+  "properties": {
+    "asset-type": {
+      "type": "string",
+      "enum": [
+        "pipeline",
+        "descriptor-set-layout",
+        "pipeline-layout",
+        "render-pass"
+      ]
+    }
+  },
+  "oneOf": [
+    {
+      "if": {
+        "properties": {
+          "asset-type": { "const": "descriptor-set-layout" }
+        }
+      },
+      "then": {
+        "properties": {
+          "bindings": {
+            "items": { "$ref": "/schema/descriptor_set_layout_binding.schema.json" }
+          }
+        }
+      }
+    }
+  ]
+}

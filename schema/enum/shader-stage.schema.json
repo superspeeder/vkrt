@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://neuron.superspeeder.dev/schema/enum/shader-stage.schema.json",
+  "title": "Shader Stage",
+  "description": "See VkShaderStageFlagBits",
+  "enum": [
+    "vertex",
+    "tessellation-control",
+    "tessellation-evaluation",
+    "geometry",
+    "fragment",
+    "compute",
+    "raygen",
+    "any-hit",
+    "closest-hit",
+    "miss",
+    "intersection",
+    "callable",
+    "task",
+    "mesh"
+  ]
+}

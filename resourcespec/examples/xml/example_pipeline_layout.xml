@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PipelineLayout>
+    <DescriptorSetLayouts>
+        <ExternalResource source="example_dsl.xml"/>
+    </DescriptorSetLayouts>
+
+    <PushConstantRanges>
+        <Range stages="vertex,fragment" offest="0">
+            <Layout>
+                <Vec2 key="position"/>
+                <Vec2 key="scale"/>
+                <Vec4 key="color"/>
+            </Layout>
+        </Range>
+    </PushConstantRanges>
+</PipelineLayout>

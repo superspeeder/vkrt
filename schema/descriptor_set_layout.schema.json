@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://neuron.superspeeder.dev/schema/descriptor_set_layout.schema.json",
+  "title": "Descriptor Set Layout",
+  "description": "Descriptor Set Layout definition. See VkDescriptorSetLayoutCreateInfo",
+  "type": "object",
+  "properties": {
+    "bindings": {
+      "type": "array",
+      "items": {
+        "$ref": "/schema/descriptor_set_layout_binding.schema.json"
+      }
+    }
+  }
+}

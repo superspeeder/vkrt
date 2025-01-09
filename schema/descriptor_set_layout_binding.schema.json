@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://neuron.superspeeder.dev/schema/descriptor_set_layout_binding.schema.json",
+  "title": "Descriptor Set Layout Binding",
+  "description": "Representation of VkDescriptorSetLayoutBinding",
+  "type": "object",
+  "properties": {
+    "index": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "descriptor-type": {
+      "$ref": "/schema/enum/descriptor-type.schema.json"
+    },
+    "stages": {
+      "$ref": "/schema/mask/shader-stages.schema.json"
+    }
+  }
+}

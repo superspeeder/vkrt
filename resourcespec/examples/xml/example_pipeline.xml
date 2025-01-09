@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Pipeline type="graphics">
+    <PipelineLayout resource="external:example_pipeline_layout.xml"/>
+    <VertexLayout>
+        <Binding index="0" size="@packed_attributes">
+            <Attribute location="0" type="float-vec2"/>
+        </Binding>
+    </VertexLayout>
+    <DynamicStates>
+        <DynamicState state="scissor"/>
+        <DynamicState state="viewport"/>
+        <DynamicState state="primitive-topology"/>
+    </DynamicStates>
+    <Shaders>
+        <Shader stage="vertex" code_type="spir-v" code="shaders/bin/vert.glsl.spv"/>
+        <Shader stage="fragment" code_type="spir-v" code="shaders/bin/frag.glsl.spv"/>
+    </Shaders>
+    <BlendAttachments>
+        <ColorAttachment enableBlend="true" writeMask="rgba">
+            <ColorFunction srcFactor="src-alpha" dstFactor="one-minus-src-alpha" op="add"/>
+            <AlphaFunction srcFactor="one" dstFactor="zero" op="add"/>
+        </ColorAttachment>
+    </BlendAttachments>
+    <CullMode mode="none"/>
+    <Viewports>
+        <Viewport blank="true"/>
+    </Viewports>
+    <Scissors>
+        <Scissor blank="true"/>
+    </Scissors>
+    <RenderingAttachments>
+        <ColorAttachment>
+            <Format from="swapchain-surface-format"/>
+        </ColorAttachment>
+    </RenderingAttachments>
+</Pipeline>

@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://neuron.superspeeder.dev/schema/enums/descriptor-type.schema.json",
+  "title": "Descriptor Type",
+  "description": "Representation of VkDescriptorType",
+  "enum": [
+    "sampler",
+    "combined-image-sampler",
+    "sampled-image",
+    "storage-image",
+    "uniform-texel-buffer",
+    "storage-texel-buffer",
+    "uniform-buffer",
+    "storage-buffer",
+    "uniform-buffer-dynamic",
+    "storage-buffer-dynamic",
+    "input-attachment",
+    "inline-uniform-block",
+    "acceleration-structure",
+    "mutable"
+  ]
+}

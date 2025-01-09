@@ -1,0 +1,88 @@
+asset_type: render-pass
+kind: dynamic
+resources:
+  - descriptor_set:
+      type: uniform-buffer
+      ref: camera
+      layout: example_dsl
+      count: 1
+  - buffer:
+      type: vertex-buffer
+      ref: vertices
+      layout: "@pipeline_binding(example_pipeline, 0)"
+
+pre:
+  - layout_transition:
+      image: "@render-target"
+      subresource_range: standard-color-1-1
+      initial:
+        layout: undefined
+        access: none
+        stage: top-of-pipe
+      new:
+        layout: color-attachment-optimal
+        access: color-attachment-write
+        stage: color-attachment-output
+
+rendering_info:
+  clear_color: black
+  load_op: clear
+  store_op: store
+
+draw_calls:
+  - bind_pipeline: example_pipeline
+  - bind_descriptor:
+      bind_point: graphics
+      ref: camera
+  - bind_vertex_buffers:
+      first_binding: 0
+      buffers:
+        - buffer:
+            ref: vertices
+  - set_dynamic_states:
+      viewport: "@automatic"
+      scissor: "@automatic"
+      primitive_topology: triangle-fan
+  - draw:
+      push_constants:
+        position: (0.0, 0.0)
+        scale: (1.8, 1.8)
+        color: red
+      kind: draw
+      vertex_count: 4
+      instance_count: 1
+      first_vertex: 0
+      first_instance: 0
+  - draw:
+      push_constants:
+        position: (-0.5, 0.5)
+        scale: (-0.75, -0.75)
+        color: green
+      kind: draw
+      vertex_count: 4
+      instance_count: 1
+      first_vertex: 0
+      first_instance: 0
+  - draw:
+      push_constants:
+        position: (0.5, -0.5)
+        scale: (0.75, 0.75)
+        color: blue
+      kind: draw
+      vertex_count: 4
+      instance_count: 1
+      first_vertex: 0
+      first_instance: 0
+
+post:
+  - layout_transition:
+      image: "@render-target"
+      subresource_range: standard-color-1-1
+      initial:
+        layout: color-attachment-optimal
+        access: color-attachment-write
+        stage: color-attachment-optimal
+      new:
+        layout: present-source
+        access: none
+        stage: bottom-of-pipe

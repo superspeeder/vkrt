@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RenderPass kind="dynamic">
+    <Resources>
+        <DescriptorSet type="uniform-buffer" ref="camera" layout="external:example_dsl" setsCount="1"/>
+    </Resources>
+
+    <Pre>
+        <LayoutTransition>
+            <Image from="render-target"/>
+            <SubresourceRange preset="standard-color-1-1"/>
+            <Initial layout="undefined" access="none" stage="top-of-pipe"/>
+            <New layout="color-attachment-optimal" access="color-write" stage="color-attachment-output"/>
+        </LayoutTransition>
+    </Pre>
+
+    <RenderingInfo>
+        <ClearColor color="0x000000"/>
+        <StoreLoadOps store="store" load="clear"/>
+    </RenderingInfo>
+
+    <DrawCalls>
+        <BindPipeline resource="external:example_pipeline"/>
+        <BindDescriptor bind_point="graphics" resource="camera"/>
+        <BindVertexBuffers firstBinding="0">
+            <Buffer resource="buffers#vertices" offset="0"/>
+        </BindVertexBuffers>
+
+        <DynamicState>
+            <Viewport mode="automatic"/>
+            <Scissor mode="automatic"/>
+            <PrimitiveTopology topology="triangle-fan"/>
+        </DynamicState>
+
+        <Draw>
+            <PushConstants>
+                <Vec2 key="position" x="0.0" y="0.0"/>
+                <Vec2 key="scale" x="1.8" y="1.8"/>
+                <Color key="color" name="red"/>
+            </PushConstants>
+
+            <Call vertexCount="4" instanceCount="1" firstVertex="0" firstInstance="0"/>
+        </Draw>
+
+        <Draw>
+            <PushConstants>
+                <Vec2 key="position" x="-0.5" y="0.5"/>
+                <Vec2 key="scale" x="-0.75" y="-0.75"/>
+                <Color key="color" name="green"/>
+            </PushConstants>
+
+            <Call vertexCount="4" instanceCount="1" firstVertex="0" firstInstance="0"/>
+        </Draw>
+
+        <Draw>
+            <PushConstants>
+                <Vec2 key="position" x="0.5" y="-0.5"/>
+                <Vec2 key="scale" x="0.75" y="0.75"/>
+                <Color key="color" name="blue"/>
+            </PushConstants>
+
+            <Call vertexCount="4" instanceCount="1" firstVertex="0" firstInstance="0"/>
+        </Draw>
+    </DrawCalls>
+
+    <Post>
+        <LayoutTransition>
+            <Image from="render-target"/>
+            <SubresourceRange preset="standard-color-1-1"/>
+            <Initial layout="color-attachment-optimal" access="color-write" stage="color-attachment-output"/>
+            <New layout="present-source" access="none" stage="bottom-of-pipe"/>
+        </LayoutTransition>
+    </Post>
+</RenderPass>

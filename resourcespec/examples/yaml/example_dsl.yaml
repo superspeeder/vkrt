@@ -1,0 +1,7 @@
+bindings:
+  - binding:
+    index: 0
+    type: uniform-buffer
+    stages:
+      - vertex
+      - fragment

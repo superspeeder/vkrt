@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://neuron.superspeeder.dev/schema/mask/shader-stages.schema.json",
+  "title": "Shader Stage Mask",
+  "description": "See VkShaderStageFlags and VkShaderStageFlagBits",
+  "anyOf": [
+    {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/composite-stage"
+      }
+    },
+    {
+      "$ref": "#/$defs/composite-stage"
+    }
+  ],
+  "$defs": {
+    "composite-stage": {
+      "anyOf": [
+        {
+          "$ref": "/schema/enum/shader-stage.schema.json"
+        },
+        {
+          "enum": [
+            "all-graphics",
+            "all"
+          ]
+        }
+      ]
+    }
+  }
+}
